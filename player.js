@@ -136,7 +136,7 @@
     needle.style.transform = 'rotate(0deg)';
     noteDisplay.textContent = '—';
     freqValue.textContent = '0.0';
-    centsDisplay.textContent = '0 cent';
+    centsDisplay.textContent = '音を鳴らしてください';
     meterWrap.removeAttribute('data-state');
   }
 
@@ -194,14 +194,26 @@
     return sampleRate / T0;
   }
 
+  let micSilenceFrames = 0;
+  const SILENCE_RESET_FRAMES = 45; // 約0.75秒無音が続いたら待機表示に戻す
+
   function tickMic() {
     micRafId = requestAnimationFrame(tickMic);
     analyser.getFloatTimeDomainData(dataBuf);
     const freq = autoCorrelate(dataBuf, micAudioCtx.sampleRate);
 
     if (freq === -1 || freq < 30 || freq > 2000) {
-      return; // 無音・検出不能時は前回表示を維持
+      micSilenceFrames++;
+      if (micSilenceFrames === SILENCE_RESET_FRAMES) {
+        noteDisplay.textContent = '—';
+        freqValue.textContent = '0.0';
+        centsDisplay.textContent = '音を鳴らしてください';
+        needle.style.transform = 'rotate(0deg)';
+        meterWrap.removeAttribute('data-state');
+      }
+      return;
     }
+    micSilenceFrames = 0;
 
     const { noteName, octave, cents } = freqToNote(freq);
     noteDisplay.textContent = `${noteName}${octave}`;
