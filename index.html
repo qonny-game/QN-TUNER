@@ -8,28 +8,29 @@
 </head>
 <body>
 
-<div class="app">
+<header id="appHeader">
+  <div>
+    <h1 id="appLogo">QNTUNER<span id="appVersion">Ver1.0.0</span></h1>
+    <p id="appTitle"><span id="appTitleInner"><span id="appTitleText">音声取込チューナー &amp; 発信音</span></span></p>
+  </div>
+  <div class="mode-switch" id="modeSwitch" role="tablist">
+    <button class="mode-btn is-active" data-mode="mic" role="tab">マイク</button>
+    <button class="mode-btn" data-mode="tone" role="tab">発信音</button>
+  </div>
+</header>
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">QN</span><span class="brand-name">TUNER</span>
-    </div>
-    <div class="mode-switch" role="tablist">
-      <button class="mode-btn is-active" data-mode="mic" role="tab">マイク</button>
-      <button class="mode-btn" data-mode="tone" role="tab">発信音</button>
-    </div>
-  </header>
+<main class="app-container">
 
   <!-- ==================== マイクチューナー画面 ==================== -->
   <section class="screen" id="screen-mic">
 
-    <div class="mic-permission" id="micPermission">
+    <div class="control-card mic-permission" id="micPermission">
       <p class="mic-permission-text">マイクを使って音を聞き取り、音程を表示します</p>
       <button class="btn-primary" id="btnStartMic">マイクを開始</button>
       <p class="mic-permission-note" id="micErrorNote"></p>
     </div>
 
-    <div class="meter-wrap" id="meterWrap" hidden>
+    <div class="control-card meter-wrap" id="meterWrap" hidden>
 
       <div class="gauge">
         <svg class="gauge-svg" viewBox="0 0 300 170" aria-hidden="true">
@@ -70,9 +71,11 @@
       <button class="preset-tab" data-preset="chromatic">管楽器（全音）</button>
     </div>
 
-    <div class="string-grid" id="stringGrid"></div>
+    <div class="control-card">
+      <div class="string-grid" id="stringGrid"></div>
+    </div>
 
-    <div class="tone-now" id="toneNow" hidden>
+    <div class="control-card tone-now" id="toneNow" hidden>
       <div class="tone-now-note" id="toneNowNote">—</div>
       <div class="tone-now-freq"><span id="toneNowFreq">0.0</span> Hz</div>
       <button class="btn-stop-tone" id="btnStopTone">停止</button>
@@ -80,7 +83,7 @@
 
   </section>
 
-</div>
+</main>
 
 <script src="player.js"></script>
 </body>

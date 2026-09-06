@@ -267,12 +267,18 @@
     if (!toneAudioCtx) {
       toneAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
+    if (toneAudioCtx.state === 'suspended') {
+      toneAudioCtx.resume();
+    }
+
     toneOsc = toneAudioCtx.createOscillator();
     toneGain = toneAudioCtx.createGain();
-    toneOsc.type = 'sine';
+    // サイン波は倍音がなく小型スピーカーでは聞き取りにくいため、
+    // 基音を少し含む三角波にして聞こえやすくする
+    toneOsc.type = 'triangle';
     toneOsc.frequency.value = freq;
     toneGain.gain.setValueAtTime(0, toneAudioCtx.currentTime);
-    toneGain.gain.linearRampToValueAtTime(0.25, toneAudioCtx.currentTime + 0.03);
+    toneGain.gain.linearRampToValueAtTime(0.7, toneAudioCtx.currentTime + 0.03);
     toneOsc.connect(toneGain);
     toneGain.connect(toneAudioCtx.destination);
     toneOsc.start();
