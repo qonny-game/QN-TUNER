@@ -10,12 +10,8 @@
 
 <header id="appHeader">
   <div>
-    <h1 id="appLogo"><span id="appLogoAccent">QN</span>TUNER <span id="appVersion">v1.1.2</span></h1>
+    <h1 id="appLogo"><span id="appLogoAccent">QN</span>TUNER <span id="appVersion">v1.2.0</span></h1>
     <p id="appTitle">音声取込チューナー &amp; 発信音</p>
-  </div>
-  <div class="mode-switch" id="modeSwitch" role="tablist">
-    <button class="mode-btn is-active" data-mode="mic" role="tab">マイク</button>
-    <button class="mode-btn" data-mode="tone" role="tab">発信音</button>
   </div>
 </header>
 
@@ -56,8 +52,6 @@
         <div class="freq-display"><span id="freqValue">0.0</span> Hz</div>
         <div class="cents-display" id="centsDisplay">音を鳴らしてください</div>
       </div>
-
-      <button class="btn-secondary" id="btnStopMic">マイクを停止</button>
     </div>
 
   </section>
@@ -73,18 +67,38 @@
     </div>
 
     <div class="control-card tone-card">
-      <div class="string-grid" id="stringGrid"></div>
-    </div>
-
-    <div class="control-card tone-now" id="toneNow" hidden>
-      <div class="tone-now-note" id="toneNowNote">—</div>
-      <div class="tone-now-freq"><span id="toneNowFreq">0.0</span> Hz</div>
-      <button class="btn-stop-tone" id="btnStopTone">停止</button>
+      <div class="string-list" id="stringList"></div>
     </div>
 
   </section>
 
 </main>
+
+<!-- ==================== 下部固定コントロールバー ==================== -->
+<footer class="bottom-bar" id="bottomBar">
+
+  <div class="bottom-now" id="toneNow" hidden>
+    <span class="bottom-now-note" id="toneNowNote">—</span>
+    <span class="bottom-now-freq"><span id="toneNowFreq">0.0</span> Hz</span>
+    <button class="bottom-now-stop" id="btnStopTone">停止</button>
+  </div>
+
+  <div class="bottom-controls">
+    <button class="bottom-btn is-active" id="btnStartMic2" data-mode="mic">
+      <span class="bottom-btn-icon">🎙</span>
+      <span class="bottom-btn-text">マイク</span>
+    </button>
+    <button class="bottom-btn" id="btnToneMode" data-mode="tone">
+      <span class="bottom-btn-icon">〜</span>
+      <span class="bottom-btn-text">発信音</span>
+    </button>
+    <button class="bottom-btn bottom-btn-stop" id="btnStopMic2" hidden>
+      <span class="bottom-btn-icon">■</span>
+      <span class="bottom-btn-text">停止</span>
+    </button>
+  </div>
+
+</footer>
 
 <script src="player.js"></script>
 </body>

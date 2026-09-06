@@ -21,33 +21,33 @@
   }
 
   // ==================== プリセット定義 ====================
+  // TAB譜面と同じ並び：配列の先頭が1弦（一番上に表示される）。
 
-  // midi note numbers: A4=69
   const PRESETS = {
     guitar: [
-      { label: '6弦', note: 'E2', midi: 40 },
-      { label: '5弦', note: 'A2', midi: 45 },
-      { label: '4弦', note: 'D3', midi: 50 },
-      { label: '3弦', note: 'G3', midi: 55 },
-      { label: '2弦', note: 'B3', midi: 59 },
       { label: '1弦', note: 'E4', midi: 64 },
+      { label: '2弦', note: 'B3', midi: 59 },
+      { label: '3弦', note: 'G3', midi: 55 },
+      { label: '4弦', note: 'D3', midi: 50 },
+      { label: '5弦', note: 'A2', midi: 45 },
+      { label: '6弦', note: 'E2', midi: 40 },
     ],
     bass: [
-      { label: '4弦', note: 'E1', midi: 28 },
-      { label: '3弦', note: 'A1', midi: 33 },
-      { label: '2弦', note: 'D2', midi: 38 },
       { label: '1弦', note: 'G2', midi: 43 },
+      { label: '2弦', note: 'D2', midi: 38 },
+      { label: '3弦', note: 'A1', midi: 33 },
+      { label: '4弦', note: 'E1', midi: 28 },
     ],
     ukulele: [
-      { label: '4弦', note: 'G4', midi: 67 },
-      { label: '3弦', note: 'C4', midi: 60 },
-      { label: '2弦', note: 'E4', midi: 64 },
       { label: '1弦', note: 'A4', midi: 69 },
+      { label: '2弦', note: 'E4', midi: 64 },
+      { label: '3弦', note: 'C4', midi: 60 },
+      { label: '4弦', note: 'G4', midi: 67 },
     ],
     chromatic: (() => {
-      // C3(48) 〜 B5(83) の全音、管楽器向け
+      // 管楽器向け、高い音から低い音の順（B5 〜 C3）
       const arr = [];
-      for (let m = 48; m <= 83; m++) {
+      for (let m = 83; m >= 48; m--) {
         const name = NOTE_NAMES[((m % 12) + 12) % 12];
         const oct = Math.floor(m / 12) - 1;
         arr.push({ label: `${name}${oct}`, note: `${name}${oct}`, midi: m });
@@ -56,28 +56,49 @@
     })(),
   };
 
-  // ==================== モード切替 ====================
+  // ==================== モード切替（下部固定コントロール） ====================
 
-  const modeBtns = document.querySelectorAll('.mode-btn');
   const screenMic = document.getElementById('screen-mic');
   const screenTone = document.getElementById('screen-tone');
+  const btnStartMic2 = document.getElementById('btnStartMic2');
+  const btnToneMode = document.getElementById('btnToneMode');
+  const btnStopMic2 = document.getElementById('btnStopMic2');
 
-  modeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      modeBtns.forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      const mode = btn.dataset.mode;
-      screenMic.hidden = mode !== 'mic';
-      screenTone.hidden = mode !== 'tone';
-      if (mode !== 'tone') stopTone();
-      if (mode !== 'mic') stopMic();
-    });
+  let currentMode = 'mic';
+
+  function setMode(mode) {
+    currentMode = mode;
+    screenMic.hidden = mode !== 'mic';
+    screenTone.hidden = mode !== 'tone';
+
+    btnStartMic2.classList.toggle('is-active', mode === 'mic');
+    btnToneMode.classList.toggle('is-active', mode === 'tone');
+
+    if (mode !== 'tone') stopTone();
+
+    // マイクモードに切り替えたときは、許可済みなら継続、未許可ならパーミッション画面のまま
+    if (mode !== 'mic' && micStream) {
+      // 発信音モード中もバックグラウンドでマイクは動かさない（音の干渉防止）
+      stopMic();
+    }
+    updateBottomStopBtn();
+  }
+
+  function updateBottomStopBtn() {
+    // マイク稼働中のみ「停止」ボタンを表示
+    btnStopMic2.hidden = !(currentMode === 'mic' && micStream);
+  }
+
+  btnStartMic2.addEventListener('click', () => {
+    setMode('mic');
+    if (!micStream) startMic();
   });
+  btnToneMode.addEventListener('click', () => setMode('tone'));
+  btnStopMic2.addEventListener('click', () => stopMic());
 
   // ==================== マイクチューナー ====================
 
   const btnStartMic = document.getElementById('btnStartMic');
-  const btnStopMic = document.getElementById('btnStopMic');
   const micPermission = document.getElementById('micPermission');
   const meterWrap = document.getElementById('meterWrap');
   const micErrorNote = document.getElementById('micErrorNote');
@@ -116,6 +137,7 @@
 
     micPermission.hidden = true;
     meterWrap.hidden = false;
+    updateBottomStopBtn();
 
     tickMic();
   }
@@ -138,10 +160,10 @@
     freqValue.textContent = '0.0';
     centsDisplay.textContent = '音を鳴らしてください';
     meterWrap.removeAttribute('data-state');
+    updateBottomStopBtn();
   }
 
   btnStartMic.addEventListener('click', startMic);
-  btnStopMic.addEventListener('click', stopMic);
 
   // 自己相関法によるピッチ検出
   function autoCorrelate(buf, sampleRate) {
@@ -234,7 +256,7 @@
   // ==================== 発信音（音叉） ====================
 
   const presetTabs = document.getElementById('presetTabs');
-  const stringGrid = document.getElementById('stringGrid');
+  const stringList = document.getElementById('stringList');
   const toneNow = document.getElementById('toneNow');
   const toneNowNote = document.getElementById('toneNowNote');
   const toneNowFreq = document.getElementById('toneNowFreq');
@@ -244,22 +266,25 @@
   let toneOsc = null;
   let toneGain = null;
   let currentPreset = 'guitar';
-  let playingBtn = null;
+  let playingRow = null;
 
-  function renderStringGrid(presetKey) {
-    stringGrid.innerHTML = '';
+  function renderStringList(presetKey) {
+    stringList.innerHTML = '';
     const items = PRESETS[presetKey];
-    items.forEach(item => {
-      const btn = document.createElement('button');
-      btn.className = 'string-btn';
+    items.forEach((item, index) => {
+      const row = document.createElement('button');
+      row.className = 'string-row';
       const freq = noteToFreq(item.midi);
-      btn.innerHTML = `
-        <span class="string-btn-note">${item.note}</span>
-        <span class="string-btn-label">${item.label}</span>
-        <span class="string-btn-freq">${freq.toFixed(1)} Hz</span>
+      row.innerHTML = `
+        <span class="string-row-left">
+          <span class="string-row-order">${index + 1}</span>
+          <span class="string-row-note">${item.note}</span>
+          <span class="string-row-label">${item.label}</span>
+        </span>
+        <span class="string-row-freq">${freq.toFixed(1)} Hz</span>
       `;
-      btn.addEventListener('click', () => playTone(freq, item.note, btn));
-      stringGrid.appendChild(btn);
+      row.addEventListener('click', () => playTone(freq, item.note, row));
+      stringList.appendChild(row);
     });
   }
 
@@ -270,10 +295,10 @@
     tab.classList.add('is-active');
     currentPreset = tab.dataset.preset;
     stopTone();
-    renderStringGrid(currentPreset);
+    renderStringList(currentPreset);
   });
 
-  function playTone(freq, noteLabel, btn) {
+  function playTone(freq, noteLabel, row) {
     stopTone();
 
     if (!toneAudioCtx) {
@@ -295,8 +320,8 @@
     toneGain.connect(toneAudioCtx.destination);
     toneOsc.start();
 
-    btn.classList.add('is-playing');
-    playingBtn = btn;
+    row.classList.add('is-playing');
+    playingRow = row;
 
     toneNow.hidden = false;
     toneNowNote.textContent = noteLabel;
@@ -312,9 +337,9 @@
       setTimeout(() => { try { osc.stop(); } catch (e) {} }, 50);
       toneOsc = null;
     }
-    if (playingBtn) {
-      playingBtn.classList.remove('is-playing');
-      playingBtn = null;
+    if (playingRow) {
+      playingRow.classList.remove('is-playing');
+      playingRow = null;
     }
     toneNow.hidden = true;
   }
@@ -322,6 +347,6 @@
   btnStopTone.addEventListener('click', stopTone);
 
   // 初期描画
-  renderStringGrid(currentPreset);
+  renderStringList(currentPreset);
 
 })();

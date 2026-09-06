@@ -40,7 +40,6 @@ body {
   background: #0d0d0f;
   color: #f0f0f3;
   font-family: var(--font-body, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, sans-serif;
-  padding: 20px;
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -54,17 +53,13 @@ body {
 #appHeader {
   width: 100%;
   max-width: 480px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
+  padding: 18px 20px 12px;
   flex-shrink: 0;
 }
 
 #appLogo {
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -92,46 +87,6 @@ body {
   color: #8b8b9e;
 }
 
-/* ---------- Mode switch (tab pill, av-toggle-btn 質感) ---------- */
-
-.mode-switch {
-  flex-shrink: 0;
-  display: flex;
-  background: #16161b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 4px;
-  gap: 2px;
-}
-
-.mode-btn {
-  border: none;
-  background: transparent;
-  color: #8b8b9e;
-  font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  padding: 10px 18px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
-}
-
-.mode-btn.is-active {
-  background: var(--accent-primary);
-  color: #fff;
-  box-shadow: 0 4px 14px var(--accent-glow);
-}
-
-.mode-btn:hover:not(.is-active) {
-  color: #f0f0f3;
-}
-
-.mode-btn:active {
-  transform: scale(0.94);
-}
-
 /* ---------- Layout ---------- */
 
 .app-container {
@@ -142,6 +97,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 0 20px;
 }
 
 .screen {
@@ -150,7 +106,11 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 14px;
+  gap: 12px;
+}
+
+.screen[hidden] {
+  display: none;
 }
 
 /* Card: QNAUDIOのパネル言語 */
@@ -158,27 +118,27 @@ body {
   background: #16161b;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 22px 22px;
+  padding: 18px 20px;
 }
 
 /* ---------- Mic permission ---------- */
 
 .mic-permission {
   text-align: center;
-  padding: 32px 24px;
+  padding: 18px 22px;
 }
 
 .mic-permission-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
+  font-size: 26px;
+  margin-bottom: 6px;
   opacity: 0.9;
 }
 
 .mic-permission-text {
   color: #8b8b9e;
-  font-size: 14px;
-  margin: 0 0 20px;
-  line-height: 1.7;
+  font-size: 13px;
+  margin: 0 0 14px;
+  line-height: 1.6;
 }
 
 .mic-permission-note {
@@ -193,10 +153,10 @@ body {
   color: #fff;
   border: none;
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  padding: 14px 36px;
+  padding: 11px 28px;
   border-radius: 12px;
   cursor: pointer;
   box-shadow: 0 4px 14px var(--accent-glow);
@@ -212,42 +172,23 @@ body {
   transform: scale(0.96);
 }
 
-.btn-secondary {
-  background: #1c1c24;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #8b8b9e;
-  font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 11px 24px;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: background var(--dur-hover) var(--ease-snap), border-color var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
-}
-
-.btn-secondary:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.btn-secondary:active {
-  transform: scale(0.96);
-}
-
 /* ---------- Meter (gauge) ---------- */
 
 .meter-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
+}
+
+.meter-wrap[hidden] {
+  display: none;
 }
 
 .gauge {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 280px;
 }
 
 .gauge-svg {
@@ -319,11 +260,11 @@ body {
 
 .note-display {
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 56px;
+  font-size: 52px;
   font-weight: 700;
   line-height: 1;
   color: #f0f0f3;
-  min-height: 62px;
+  min-height: 58px;
   transition: color var(--dur-hover) var(--ease-snap);
 }
 
@@ -332,7 +273,7 @@ body {
   font-size: 15px;
   font-weight: 500;
   color: #8b8b9e;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .cents-display {
@@ -405,126 +346,242 @@ body {
   transform: scale(0.94);
 }
 
+/* 弦リストカード：中身がav-toggle-btn同様「隙間なく繋がった1つの角丸ブロック」になるよう
+   カード自体のpaddingを0にし、内側の各行が枠を分担する */
 .tone-card {
-  padding: 16px;
+  padding: 0;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
-.string-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+.string-list {
+  display: flex;
+  flex-direction: column;
   width: 100%;
 }
 
-.string-btn {
-  background: #1c1c24;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 12px 10px;
+/* 1弦（TAB譜面同様、最上段）〜最終弦を上から順に縦一列表示。
+   QNAUDIOのav-toggle-btn行と同じく、隣接ボタンは境界線を共有し
+   「1枚の帯」に見えるようにする（個々のカードに分断しない）。 */
+.string-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
   color: #f0f0f3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  transition: background var(--dur-hover) var(--ease-snap), border-color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap), box-shadow var(--dur-hover) var(--ease-snap);
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
 }
 
-.string-btn:hover {
-  border-color: var(--accent-primary);
+.string-row:first-child {
+  border-top: none;
 }
 
-.string-btn:active {
-  transform: scale(0.95);
+.string-row:first-child {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
 
-.string-btn.is-playing {
-  border-color: var(--accent-primary);
+.string-row:last-child {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.string-row:hover {
+  background: #1c1c24;
+}
+
+.string-row:active {
+  transform: scale(0.99);
+}
+
+.string-row.is-playing {
   background: var(--accent-glow);
-  box-shadow: 0 0 0 1px var(--accent-primary), 0 4px 16px var(--accent-glow);
 }
 
-.string-btn-note {
+.string-row-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.string-row-order {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1c1c24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 22px;
+  font-size: 11px;
   font-weight: 700;
-}
-
-.string-btn-label {
-  font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
-  font-size: 12px;
   color: #8b8b9e;
 }
 
-.string-btn-freq {
+.string-row.is-playing .string-row-order {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+}
+
+.string-row-note {
+  font-family: var(--font-display, 'Outfit'), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.string-row-label {
   font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
-  font-size: 11px;
+  font-size: 12px;
+  color: #8b8b9e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.string-row-freq {
+  flex-shrink: 0;
+  font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
+  font-size: 12px;
   color: #6b6b7b;
 }
 
-.tone-now {
-  text-align: center;
+/* ---------- 下部固定コントロールバー（QNAUDIOのav-toggle-btn質感） ---------- */
+
+.bottom-bar {
+  width: 100%;
   flex-shrink: 0;
-  padding: 16px 22px;
+  background: #16161b;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bottom-now {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  padding: 4px 4px 2px;
   animation: toneNowIn var(--dur-open) var(--ease-pop);
 }
 
+.bottom-now[hidden] {
+  display: none;
+}
+
 @keyframes toneNowIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.tone-now-note {
+.bottom-now-note {
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 40px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--accent-primary);
 }
 
-.tone-now-freq {
+.bottom-now-freq {
   font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
   color: #8b8b9e;
-  margin-top: 4px;
 }
 
-.btn-stop-tone {
-  margin-top: 16px;
+.bottom-now-stop {
+  margin-left: 6px;
   background: #1c1c24;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #8b8b9e;
+  font-family: var(--font-display, 'Outfit'), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap);
+}
+
+.bottom-now-stop:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* av-toggle-btnと同じく、隙間なく繋がった1つの角丸帯として並べる */
+.bottom-controls {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.bottom-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 54px;
+  background: #1c1c24;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
   color: #8b8b9e;
   font-family: var(--font-display, 'Outfit'), sans-serif;
   font-size: 13px;
   font-weight: 600;
-  padding: 9px 22px;
-  border-radius: 10px;
+  letter-spacing: 0.2px;
   cursor: pointer;
-  transition: background var(--dur-hover) var(--ease-snap), border-color var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
+  transition: background var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
 }
 
-.btn-stop-tone:hover {
-  border-color: var(--accent-primary);
+.bottom-btn:first-child {
+  border-left: none;
+}
+
+.bottom-btn:hover:not(.is-active) {
+  background: #252530;
   color: var(--accent-primary);
 }
 
-.btn-stop-tone:active {
-  transform: scale(0.96);
+.bottom-btn:active {
+  transform: scale(0.97);
+}
+
+.bottom-btn.is-active {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.bottom-btn-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.bottom-btn-stop.is-active {
+  background: var(--note-sharp);
+  color: #1a1206;
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: 14px;
-  }
   #appHeader {
-    flex-wrap: nowrap;
-    align-items: center;
-    margin-bottom: 10px;
+    padding: 14px 16px 10px;
   }
   #appLogo {
     font-size: 20px;
@@ -532,39 +589,39 @@ body {
   #appTitle {
     font-size: 11px;
   }
+  .app-container {
+    padding: 0 16px;
+  }
   .note-display {
-    font-size: 44px;
-    min-height: 50px;
+    font-size: 42px;
+    min-height: 48px;
   }
   .control-card {
     padding: 16px 16px;
   }
   .mic-permission {
-    padding: 24px 18px;
+    padding: 16px 16px;
   }
-  .mode-btn {
-    padding: 9px 14px;
-  }
-  .string-btn {
-    padding: 10px 8px;
-  }
-  .string-btn-note {
-    font-size: 19px;
+  .string-row {
+    padding: 12px 16px;
   }
 }
 
 @media (max-height: 700px) {
   .gauge {
-    max-width: 220px;
+    max-width: 210px;
   }
   .note-display {
-    font-size: 40px;
-    min-height: 46px;
+    font-size: 38px;
+    min-height: 44px;
   }
   .meter-wrap {
     gap: 10px;
   }
   .control-card {
     padding: 14px 16px;
+  }
+  .string-row {
+    padding: 10px 16px;
   }
 }
