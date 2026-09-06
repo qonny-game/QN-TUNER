@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QNTUNER</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">QN</span><span class="brand-name">TUNER</span>
+    </div>
+    <div class="mode-switch" role="tablist">
+      <button class="mode-btn is-active" data-mode="mic" role="tab">マイク</button>
+      <button class="mode-btn" data-mode="tone" role="tab">発信音</button>
+    </div>
+  </header>
+
+  <!-- ==================== マイクチューナー画面 ==================== -->
+  <section class="screen" id="screen-mic">
+
+    <div class="mic-permission" id="micPermission">
+      <p class="mic-permission-text">マイクを使って音を聞き取り、音程を表示します</p>
+      <button class="btn-primary" id="btnStartMic">マイクを開始</button>
+      <p class="mic-permission-note" id="micErrorNote"></p>
+    </div>
+
+    <div class="meter-wrap" id="meterWrap" hidden>
+
+      <div class="gauge">
+        <svg class="gauge-svg" viewBox="0 0 300 170" aria-hidden="true">
+          <path class="gauge-track" d="M 20 160 A 130 130 0 0 1 280 160" />
+          <path class="gauge-zone-flat" d="M 20 160 A 130 130 0 0 1 95 45" />
+          <path class="gauge-zone-in" d="M 108 33 A 130 130 0 0 1 192 33" />
+          <path class="gauge-zone-sharp" d="M 205 45 A 130 130 0 0 1 280 160" />
+          <g id="needle" class="needle" style="transform: rotate(0deg)">
+            <line x1="150" y1="160" x2="150" y2="45" />
+            <circle cx="150" cy="160" r="7" />
+          </g>
+        </svg>
+        <div class="gauge-labels">
+          <span>♭</span>
+          <span>IN TUNE</span>
+          <span>♯</span>
+        </div>
+      </div>
+
+      <div class="reading">
+        <div class="note-display" id="noteDisplay">—</div>
+        <div class="freq-display"><span id="freqValue">0.0</span> Hz</div>
+        <div class="cents-display" id="centsDisplay">0 cent</div>
+      </div>
+
+      <button class="btn-secondary" id="btnStopMic">マイクを停止</button>
+    </div>
+
+  </section>
+
+  <!-- ==================== 発信音（音叉）画面 ==================== -->
+  <section class="screen" id="screen-tone" hidden>
+
+    <div class="preset-tabs" id="presetTabs">
+      <button class="preset-tab is-active" data-preset="guitar">ギター</button>
+      <button class="preset-tab" data-preset="bass">ベース</button>
+      <button class="preset-tab" data-preset="ukulele">ウクレレ</button>
+      <button class="preset-tab" data-preset="chromatic">管楽器（全音）</button>
+    </div>
+
+    <div class="string-grid" id="stringGrid"></div>
+
+    <div class="tone-now" id="toneNow" hidden>
+      <div class="tone-now-note" id="toneNowNote">—</div>
+      <div class="tone-now-freq"><span id="toneNowFreq">0.0</span> Hz</div>
+      <button class="btn-stop-tone" id="btnStopTone">停止</button>
+    </div>
+
+  </section>
+
+</div>
+
+<script src="player.js"></script>
+</body>
+</html>
