@@ -28,19 +28,24 @@
 
 html {
   touch-action: pan-x pan-y;
+  height: 100%;
+}
+
+html, body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
   background: #0d0d0f;
   color: #f0f0f3;
   font-family: var(--font-body, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, sans-serif;
-  padding: 24px;
+  padding: 20px;
   margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  overscroll-behavior: none;
+  height: 100dvh;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -53,7 +58,8 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
 }
 
 #appLogo {
@@ -131,15 +137,20 @@ body {
 .app-container {
   width: 100%;
   max-width: 480px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
 .screen {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  justify-content: center;
+  gap: 14px;
 }
 
 /* Card: QNAUDIOのパネル言語 */
@@ -147,26 +158,26 @@ body {
   background: #16161b;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 28px 24px;
+  padding: 22px 22px;
 }
 
 /* ---------- Mic permission ---------- */
 
 .mic-permission {
   text-align: center;
-  padding: 48px 24px;
+  padding: 32px 24px;
 }
 
 .mic-permission-icon {
-  font-size: 40px;
-  margin-bottom: 16px;
+  font-size: 36px;
+  margin-bottom: 12px;
   opacity: 0.9;
 }
 
 .mic-permission-text {
   color: #8b8b9e;
   font-size: 14px;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   line-height: 1.7;
 }
 
@@ -230,7 +241,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 18px;
 }
 
 .gauge {
@@ -308,11 +319,11 @@ body {
 
 .note-display {
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 64px;
+  font-size: 56px;
   font-weight: 700;
   line-height: 1;
   color: #f0f0f3;
-  min-height: 70px;
+  min-height: 62px;
   transition: color var(--dur-hover) var(--ease-snap);
 }
 
@@ -352,12 +363,17 @@ body {
 
 /* ---------- Tone (oscillator) screen ---------- */
 
+#screen-tone {
+  justify-content: flex-start;
+}
+
 .preset-tabs {
   display: flex;
   gap: 6px;
   overflow-x: auto;
   padding-bottom: 2px;
   scrollbar-width: none;
+  flex-shrink: 0;
 }
 
 .preset-tabs::-webkit-scrollbar { display: none; }
@@ -390,26 +406,32 @@ body {
 }
 
 .tone-card {
-  padding: 20px;
+  padding: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
 }
 
 .string-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
 
 .string-btn {
   background: #1c1c24;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  padding: 18px 12px;
+  padding: 12px 10px;
   cursor: pointer;
   color: #f0f0f3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   transition: background var(--dur-hover) var(--ease-snap), border-color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap), box-shadow var(--dur-hover) var(--ease-snap);
 }
 
@@ -447,6 +469,8 @@ body {
 
 .tone-now {
   text-align: center;
+  flex-shrink: 0;
+  padding: 16px 22px;
   animation: toneNowIn var(--dur-open) var(--ease-pop);
 }
 
@@ -495,25 +519,52 @@ body {
 
 @media (max-width: 768px) {
   body {
-    padding: 16px;
+    padding: 14px;
   }
   #appHeader {
     flex-wrap: nowrap;
     align-items: center;
+    margin-bottom: 10px;
   }
   #appLogo {
-    font-size: 22px;
+    font-size: 20px;
   }
   #appTitle {
     font-size: 11px;
   }
   .note-display {
-    font-size: 52px;
+    font-size: 44px;
+    min-height: 50px;
   }
   .control-card {
-    padding: 22px 18px;
+    padding: 16px 16px;
+  }
+  .mic-permission {
+    padding: 24px 18px;
   }
   .mode-btn {
     padding: 9px 14px;
+  }
+  .string-btn {
+    padding: 10px 8px;
+  }
+  .string-btn-note {
+    font-size: 19px;
+  }
+}
+
+@media (max-height: 700px) {
+  .gauge {
+    max-width: 220px;
+  }
+  .note-display {
+    font-size: 40px;
+    min-height: 46px;
+  }
+  .meter-wrap {
+    gap: 10px;
+  }
+  .control-card {
+    padding: 14px 16px;
   }
 }
