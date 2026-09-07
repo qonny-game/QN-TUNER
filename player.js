@@ -301,6 +301,8 @@
   const toneNowFreq = document.getElementById('toneNowFreq');
   const btnStopTone = document.getElementById('btnStopTone');
 
+  const PRESET_ORDER = ['guitar', 'bass', 'ukulele', 'chromatic'];
+
   let toneAudioCtx = null;
   let toneOsc = null;
   let toneGain = null;
@@ -359,16 +361,22 @@
     });
   }
 
-  presetTabs.addEventListener('click', (e) => {
-    const tab = e.target.closest('.preset-tab');
-    if (!tab) return;
-    document.querySelectorAll('.preset-tab').forEach(t => t.classList.remove('is-active'));
-    tab.classList.add('is-active');
-    currentPreset = tab.dataset.preset;
+  function selectPreset(presetKey) {
+    if (!PRESET_ORDER.includes(presetKey) || presetKey === currentPreset) return;
+    document.querySelectorAll('.preset-tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.preset === presetKey);
+    });
+    currentPreset = presetKey;
     currentTuning = 'regular';
     stopTone();
     renderTuningTabs();
     renderStringList();
+  }
+
+  presetTabs.addEventListener('click', (e) => {
+    const tab = e.target.closest('.preset-tab');
+    if (!tab) return;
+    selectPreset(tab.dataset.preset);
   });
 
   tuningTabs.addEventListener('click', (e) => {
@@ -428,6 +436,43 @@
   }
 
   btnStopTone.addEventListener('click', stopTone);
+
+  // ==================== Keyboard shortcuts (Tone screen only) ====================
+  // 1-6: toggle guitar strings 1-6 on/off
+  // Space: stop whatever is currently sounding
+  // Left/Right: switch preset (Guitar / Bass / Ukulele / Wind)
+
+  document.addEventListener('keydown', (e) => {
+    if (currentMode !== 'tone') return;
+    if (e.repeat) return;
+
+    // Space: stop current tone
+    if (e.code === 'Space') {
+      e.preventDefault();
+      stopTone();
+      return;
+    }
+
+    // Left/Right: cycle through presets
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+      e.preventDefault();
+      const idx = PRESET_ORDER.indexOf(currentPreset);
+      const dir = e.code === 'ArrowLeft' ? -1 : 1;
+      const nextIdx = (idx + dir + PRESET_ORDER.length) % PRESET_ORDER.length;
+      selectPreset(PRESET_ORDER[nextIdx]);
+      return;
+    }
+
+    // 1-6: toggle guitar strings 1-6 (matches the on-screen order top to bottom)
+    if (currentPreset === 'guitar' && /^Digit[1-6]$/.test(e.code)) {
+      e.preventDefault();
+      const stringNumber = parseInt(e.code.replace('Digit', ''), 10);
+      const rows = stringList.querySelectorAll('.string-row');
+      const row = rows[stringNumber - 1];
+      if (!row) return;
+      row.click();
+    }
+  });
 
   // Initial render
   renderTuningTabs();
