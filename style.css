@@ -48,7 +48,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ---------- Header (QNAUDIO準拠) ---------- */
+/* ---------- Header (matches QNAUDIO) ---------- */
 
 #appHeader {
   width: 100%;
@@ -125,7 +125,7 @@ body {
   display: none;
 }
 
-/* Card: QNAUDIOのパネル言語 */
+/* Card: QNAUDIO panel language */
 .control-card {
   background: #16161b;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -358,8 +358,46 @@ body {
   transform: scale(0.94);
 }
 
-/* 弦リストカード：中身がav-toggle-btn同様「隙間なく繋がった1つの角丸ブロック」になるよう
-   カード自体のpaddingを0にし、内側の各行が枠を分担する */
+/* Tuning switch (Regular/Half Down/Drop tunings): 3x2 grid layout */
+.tuning-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tuning-tabs[hidden] {
+  display: none;
+}
+
+.tuning-tab {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #6b6b7b;
+  font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: background var(--dur-hover) var(--ease-snap), border-color var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
+}
+
+.tuning-tab.is-active {
+  background: #1c1c24;
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.tuning-tab:active {
+  transform: scale(0.94);
+}
+
+/* String list card: padding is 0 so the rows themselves form the border,
+   matching the av-toggle-btn "one seamless rounded block" look */
 .tone-card {
   padding: 0;
   flex: 1;
@@ -375,15 +413,15 @@ body {
   width: 100%;
 }
 
-/* 1弦（TAB譜面同様、最上段）〜最終弦を上から順に縦一列表示。
-   QNAUDIOのav-toggle-btn行と同じく、隣接ボタンは境界線を共有し
-   「1枚の帯」に見えるようにする（個々のカードに分断しない）。 */
+/* Strings are listed top to bottom, string 1 first, just like a TAB chart.
+   As with QNAUDIO's av-toggle-btn rows, adjacent buttons share a border
+   so they read as a single strip rather than separate cards. */
 .string-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px;
+  padding: 18px 20px;
   background: transparent;
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -473,7 +511,7 @@ body {
   color: #6b6b7b;
 }
 
-/* ---------- 下部固定コントロールバー（QNAUDIOのav-toggle-btn質感） ---------- */
+/* ---------- Bottom fixed control bar (QNAUDIO av-toggle-btn feel) ---------- */
 
 .bottom-bar {
   width: 100%;
@@ -488,10 +526,11 @@ body {
 
 .bottom-now {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 4px 4px 2px;
+  gap: 6px;
+  padding: 16px 12px 10px;
   animation: toneNowIn var(--dur-open) var(--ease-pop);
 }
 
@@ -506,37 +545,45 @@ body {
 
 .bottom-now-note {
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
   color: var(--accent-primary);
 }
 
 .bottom-now-freq {
   font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 600;
   color: #8b8b9e;
 }
 
 .bottom-now-stop {
-  margin-left: 6px;
+  margin-top: 4px;
   background: #1c1c24;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #8b8b9e;
+  color: #f0f0f3;
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 5px 14px;
-  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 12px 40px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: border-color var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap);
+  transition: border-color var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), background var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
 }
 
 .bottom-now-stop:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
+  border-color: var(--note-sharp);
+  color: var(--note-sharp);
+  background: #201a12;
 }
 
-/* av-toggle-btnと同じく、隙間なく繋がった1つの角丸帯として並べる */
+.bottom-now-stop:active {
+  transform: scale(0.96);
+}
+
+/* Like av-toggle-btn, laid out as one seamless rounded strip */
 .bottom-controls {
   display: flex;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -561,6 +608,10 @@ body {
   letter-spacing: 0.2px;
   cursor: pointer;
   transition: background var(--dur-hover) var(--ease-snap), color var(--dur-hover) var(--ease-snap), transform var(--dur-press) var(--ease-snap);
+}
+
+.bottom-btn[hidden] {
+  display: none;
 }
 
 .bottom-btn:first-child {
@@ -616,7 +667,7 @@ body {
     padding: 16px 16px;
   }
   .string-row {
-    padding: 12px 16px;
+    padding: 15px 16px;
   }
 }
 
@@ -635,6 +686,15 @@ body {
     padding: 14px 16px;
   }
   .string-row {
-    padding: 10px 16px;
+    padding: 12px 16px;
+  }
+  .bottom-now-note {
+    font-size: 38px;
+  }
+  .bottom-now {
+    padding: 10px 12px 6px;
+  }
+  .bottom-now-stop {
+    padding: 9px 30px;
   }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,20 +10,20 @@
 
 <header id="appHeader">
   <div id="appHeaderText">
-    <h1 id="appLogo"><span id="appLogoAccent">QN</span>TUNER <span id="appVersion">v1.2.1</span></h1>
-    <p id="appTitle">音声取込チューナー &amp; 発信音</p>
+    <h1 id="appLogo"><span id="appLogoAccent">QN</span>TUNER <span id="appVersion">v1.5.0</span></h1>
+    <p id="appTitle">Mic Tuner &amp; Tone Generator</p>
   </div>
 </header>
 
 <main class="app-container">
 
-  <!-- ==================== マイクチューナー画面 ==================== -->
+  <!-- ==================== Mic Tuner screen ==================== -->
   <section class="screen" id="screen-mic">
 
     <div class="control-card mic-permission" id="micPermission">
       <div class="mic-permission-icon">🎙</div>
-      <p class="mic-permission-text">マイクを許可すると、音を鳴らすだけで<br>音程をリアルタイムに表示します</p>
-      <button class="btn-primary" id="btnStartMic">マイクを開始</button>
+      <p class="mic-permission-text">Allow microphone access, then play a note<br>to see your pitch in real time</p>
+      <button class="btn-primary" id="btnStartMic">Start Mic</button>
       <p class="mic-permission-note" id="micErrorNote"></p>
     </div>
 
@@ -50,21 +50,23 @@
       <div class="reading">
         <div class="note-display" id="noteDisplay">—</div>
         <div class="freq-display"><span id="freqValue">0.0</span> Hz</div>
-        <div class="cents-display" id="centsDisplay">音を鳴らしてください</div>
+        <div class="cents-display" id="centsDisplay">Play a note</div>
       </div>
     </div>
 
   </section>
 
-  <!-- ==================== 発信音（音叉）画面 ==================== -->
+  <!-- ==================== Tone Generator screen ==================== -->
   <section class="screen" id="screen-tone" hidden>
 
     <div class="preset-tabs" id="presetTabs">
-      <button class="preset-tab is-active" data-preset="guitar">ギター</button>
-      <button class="preset-tab" data-preset="bass">ベース</button>
-      <button class="preset-tab" data-preset="ukulele">ウクレレ</button>
-      <button class="preset-tab" data-preset="chromatic">管楽器（全音）</button>
+      <button class="preset-tab is-active" data-preset="guitar">Guitar</button>
+      <button class="preset-tab" data-preset="bass">Bass</button>
+      <button class="preset-tab" data-preset="ukulele">Ukulele</button>
+      <button class="preset-tab" data-preset="chromatic">Wind (Chromatic)</button>
     </div>
+
+    <div class="tuning-tabs" id="tuningTabs"></div>
 
     <div class="control-card tone-card">
       <div class="string-list" id="stringList"></div>
@@ -74,27 +76,27 @@
 
 </main>
 
-<!-- ==================== 下部固定コントロールバー ==================== -->
+<!-- ==================== Bottom fixed control bar ==================== -->
 <footer class="bottom-bar" id="bottomBar">
 
   <div class="bottom-now" id="toneNow" hidden>
     <span class="bottom-now-note" id="toneNowNote">—</span>
     <span class="bottom-now-freq"><span id="toneNowFreq">0.0</span> Hz</span>
-    <button class="bottom-now-stop" id="btnStopTone">停止</button>
+    <button class="bottom-now-stop" id="btnStopTone">Stop</button>
   </div>
 
   <div class="bottom-controls">
     <button class="bottom-btn is-active" id="btnStartMic2" data-mode="mic">
       <span class="bottom-btn-icon">🎙</span>
-      <span class="bottom-btn-text">マイク</span>
+      <span class="bottom-btn-text">Mic</span>
     </button>
     <button class="bottom-btn" id="btnToneMode" data-mode="tone">
       <span class="bottom-btn-icon">〜</span>
-      <span class="bottom-btn-text">発信音</span>
+      <span class="bottom-btn-text">Tone</span>
     </button>
     <button class="bottom-btn bottom-btn-stop" id="btnStopMic2" hidden>
       <span class="bottom-btn-icon">■</span>
-      <span class="bottom-btn-text">停止</span>
+      <span class="bottom-btn-text">Stop</span>
     </button>
   </div>
 

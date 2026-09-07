@@ -1,12 +1,12 @@
 (() => {
   'use strict';
 
-  // ==================== 共通: 音名/周波数ユーティリティ ====================
+  // ==================== Shared: note name / frequency utilities ====================
 
   const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const A4 = 440;
 
-  // 周波数 -> { noteName, octave, cents, midi }
+  // frequency -> { noteName, octave, cents, midi }
   function freqToNote(freq) {
     const midi = 69 + 12 * Math.log2(freq / A4);
     const roundedMidi = Math.round(midi);
@@ -20,43 +20,81 @@
     return A4 * Math.pow(2, (midi - 69) / 12);
   }
 
-  // ==================== プリセット定義 ====================
-  // TAB譜面と同じ並び：配列の先頭が1弦（一番上に表示される）。
+  function midiToNoteName(midi) {
+    const name = NOTE_NAMES[((midi % 12) + 12) % 12];
+    const oct = Math.floor(midi / 12) - 1;
+    return `${name}${oct}`;
+  }
 
-  const PRESETS = {
+  // ==================== Preset definitions ====================
+  // Ordered like a TAB chart: the first array item is string 1 (shown at the top).
+  // Base MIDI values are already one octave above standard tuning.
+
+  const BASE_STRINGS = {
     guitar: [
-      { label: '1弦', note: 'E4', midi: 64 },
-      { label: '2弦', note: 'B3', midi: 59 },
-      { label: '3弦', note: 'G3', midi: 55 },
-      { label: '4弦', note: 'D3', midi: 50 },
-      { label: '5弦', note: 'A2', midi: 45 },
-      { label: '6弦', note: 'E2', midi: 40 },
+      { label: 'String 1', midi: 76 }, // E5
+      { label: 'String 2', midi: 71 }, // B4
+      { label: 'String 3', midi: 67 }, // G4
+      { label: 'String 4', midi: 62 }, // D4
+      { label: 'String 5', midi: 57 }, // A3
+      { label: 'String 6', midi: 52 }, // E3
     ],
     bass: [
-      { label: '1弦', note: 'G2', midi: 43 },
-      { label: '2弦', note: 'D2', midi: 38 },
-      { label: '3弦', note: 'A1', midi: 33 },
-      { label: '4弦', note: 'E1', midi: 28 },
+      { label: 'String 1', midi: 55 }, // G3
+      { label: 'String 2', midi: 50 }, // D3
+      { label: 'String 3', midi: 45 }, // A2
+      { label: 'String 4', midi: 40 }, // E2
     ],
     ukulele: [
-      { label: '1弦', note: 'A4', midi: 69 },
-      { label: '2弦', note: 'E4', midi: 64 },
-      { label: '3弦', note: 'C4', midi: 60 },
-      { label: '4弦', note: 'G4', midi: 67 },
+      { label: 'String 1', midi: 69 }, // A4
+      { label: 'String 2', midi: 64 }, // E4
+      { label: 'String 3', midi: 60 }, // C4
+      { label: 'String 4', midi: 67 }, // G4
     ],
-    chromatic: (() => {
-      // 管楽器向け、高い音から低い音の順（B5 〜 C3）
-      const arr = [];
-      for (let m = 83; m >= 48; m--) {
-        const name = NOTE_NAMES[((m % 12) + 12) % 12];
-        const oct = Math.floor(m / 12) - 1;
-        arr.push({ label: `${name}${oct}`, note: `${name}${oct}`, midi: m });
-      }
-      return arr;
-    })(),
   };
 
-  // ==================== モード切替（下部固定コントロール） ====================
+  // Tuning variants: an offset applied to all strings, plus an extra drop on the lowest string only
+  const TUNING_VARIANTS = {
+    guitar: [
+      { key: 'regular', label: 'Regular',  allOffset: 0, dropLastOffset: 0 },
+      { key: 'half',    label: 'Half Down', allOffset: -1, dropLastOffset: 0 },
+      { key: 'whole',   label: 'Whole Down', allOffset: -2, dropLastOffset: 0 },
+      { key: 'dropD',   label: 'Drop D',   allOffset: 0, dropLastOffset: -2 },
+      { key: 'dropCs',  label: 'Drop C#',  allOffset: -1, dropLastOffset: -2 },
+      { key: 'dropC',   label: 'Drop C',   allOffset: -2, dropLastOffset: -2 },
+    ],
+    bass: [
+      { key: 'regular', label: 'Regular',  allOffset: 0, dropLastOffset: 0 },
+      { key: 'half',    label: 'Half Down', allOffset: -1, dropLastOffset: 0 },
+      { key: 'whole',   label: 'Whole Down', allOffset: -2, dropLastOffset: 0 },
+      { key: 'dropD',   label: 'Drop D',   allOffset: 0, dropLastOffset: -2 },
+      { key: 'dropCs',  label: 'Drop C#',  allOffset: -1, dropLastOffset: -2 },
+      { key: 'dropC',   label: 'Drop C',   allOffset: -2, dropLastOffset: -2 },
+    ],
+  };
+
+  function buildStringSet(instrumentKey, variantKey) {
+    const base = BASE_STRINGS[instrumentKey];
+    const variants = TUNING_VARIANTS[instrumentKey];
+    const variant = (variants || []).find(v => v.key === variantKey) || { allOffset: 0, dropLastOffset: 0 };
+    const lastIndex = base.length - 1;
+    return base.map((s, i) => {
+      const offset = variant.allOffset + (i === lastIndex ? variant.dropLastOffset : 0);
+      const midi = s.midi + offset;
+      return { label: s.label, note: midiToNoteName(midi), midi };
+    });
+  }
+
+  const CHROMATIC_LIST = (() => {
+    // For wind instruments, high to low (B5 down to C3)
+    const arr = [];
+    for (let m = 83; m >= 48; m--) {
+      arr.push({ label: midiToNoteName(m), note: midiToNoteName(m), midi: m });
+    }
+    return arr;
+  })();
+
+  // ==================== Mode switch (bottom fixed control) ====================
 
   const screenMic = document.getElementById('screen-mic');
   const screenTone = document.getElementById('screen-tone');
@@ -76,16 +114,16 @@
 
     if (mode !== 'tone') stopTone();
 
-    // マイクモードに切り替えたときは、許可済みなら継続、未許可ならパーミッション画面のまま
+    // When switching to mic mode, keep it running if already granted; otherwise stay on the permission screen
     if (mode !== 'mic' && micStream) {
-      // 発信音モード中もバックグラウンドでマイクは動かさない（音の干渉防止）
+      // Never run the mic in the background while in tone mode, to avoid audio interference
       stopMic();
     }
     updateBottomStopBtn();
   }
 
   function updateBottomStopBtn() {
-    // マイク稼働中のみ「停止」ボタンを表示
+    // Only show the "Stop" button while the mic is running
     btnStopMic2.hidden = !(currentMode === 'mic' && micStream);
   }
 
@@ -96,7 +134,7 @@
   btnToneMode.addEventListener('click', () => setMode('tone'));
   btnStopMic2.addEventListener('click', () => stopMic());
 
-  // ==================== マイクチューナー ====================
+  // ==================== Mic tuner ====================
 
   const btnStartMic = document.getElementById('btnStartMic');
   const micPermission = document.getElementById('micPermission');
@@ -124,7 +162,7 @@
         }
       });
     } catch (err) {
-      micErrorNote.textContent = 'マイクへのアクセスが許可されませんでした';
+      micErrorNote.textContent = 'Microphone access was not granted';
       return;
     }
 
@@ -158,22 +196,22 @@
     needle.style.transform = 'rotate(0deg)';
     noteDisplay.textContent = '—';
     freqValue.textContent = '0.0';
-    centsDisplay.textContent = '音を鳴らしてください';
+    centsDisplay.textContent = 'Play a note';
     meterWrap.removeAttribute('data-state');
     updateBottomStopBtn();
   }
 
   btnStartMic.addEventListener('click', startMic);
 
-  // 自己相関法によるピッチ検出
+  // Pitch detection via autocorrelation
   function autoCorrelate(buf, sampleRate) {
     const SIZE = buf.length;
     let rms = 0;
     for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
     rms = Math.sqrt(rms / SIZE);
-    if (rms < 0.008) return -1; // 無音判定
+    if (rms < 0.008) return -1; // treat as silence
 
-    // トリミング: 音量が小さい端を除去
+    // Trim: drop the low-amplitude edges
     let r1 = 0, r2 = SIZE - 1;
     const threshold = 0.2;
     for (let i = 0; i < SIZE / 2; i++) {
@@ -204,7 +242,7 @@
     }
     let T0 = maxPos;
 
-    // 放物線補間で精度向上
+    // Parabolic interpolation for better precision
     if (T0 > 0 && T0 < n - 1) {
       const x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
       const a = (x1 + x3 - 2 * x2) / 2;
@@ -217,7 +255,7 @@
   }
 
   let micSilenceFrames = 0;
-  const SILENCE_RESET_FRAMES = 45; // 約0.75秒無音が続いたら待機表示に戻す
+  const SILENCE_RESET_FRAMES = 45; // reset to the waiting state after ~0.75s of silence
 
   function tickMic() {
     micRafId = requestAnimationFrame(tickMic);
@@ -229,7 +267,7 @@
       if (micSilenceFrames === SILENCE_RESET_FRAMES) {
         noteDisplay.textContent = '—';
         freqValue.textContent = '0.0';
-        centsDisplay.textContent = '音を鳴らしてください';
+        centsDisplay.textContent = 'Play a note';
         needle.style.transform = 'rotate(0deg)';
         meterWrap.removeAttribute('data-state');
       }
@@ -242,7 +280,7 @@
     freqValue.textContent = freq.toFixed(1);
     centsDisplay.textContent = `${cents > 0 ? '+' : ''}${cents} cent`;
 
-    // 針: -50cent 〜 +50cent を -90deg 〜 +90deg にマッピング
+    // Needle: map -50..+50 cents to -80..+80 degrees
     const clamped = Math.max(-50, Math.min(50, cents));
     const angle = (clamped / 50) * 80;
     needle.style.transform = `rotate(${angle}deg)`;
@@ -253,9 +291,10 @@
     meterWrap.dataset.state = state;
   }
 
-  // ==================== 発信音（音叉） ====================
+  // ==================== Tone generator ====================
 
   const presetTabs = document.getElementById('presetTabs');
+  const tuningTabs = document.getElementById('tuningTabs');
   const stringList = document.getElementById('stringList');
   const toneNow = document.getElementById('toneNow');
   const toneNowNote = document.getElementById('toneNowNote');
@@ -266,11 +305,36 @@
   let toneOsc = null;
   let toneGain = null;
   let currentPreset = 'guitar';
+  let currentTuning = 'regular';
   let playingRow = null;
 
-  function renderStringList(presetKey) {
+  function getCurrentStringSet() {
+    if (currentPreset === 'chromatic') return CHROMATIC_LIST;
+    if (currentPreset === 'ukulele') return buildStringSet('ukulele', 'regular');
+    return buildStringSet(currentPreset, currentTuning);
+  }
+
+  function renderTuningTabs() {
+    const variants = TUNING_VARIANTS[currentPreset];
+    if (!variants) {
+      tuningTabs.hidden = true;
+      tuningTabs.innerHTML = '';
+      return;
+    }
+    tuningTabs.hidden = false;
+    tuningTabs.innerHTML = '';
+    variants.forEach(v => {
+      const btn = document.createElement('button');
+      btn.className = 'tuning-tab' + (v.key === currentTuning ? ' is-active' : '');
+      btn.textContent = v.label;
+      btn.dataset.tuning = v.key;
+      tuningTabs.appendChild(btn);
+    });
+  }
+
+  function renderStringList() {
     stringList.innerHTML = '';
-    const items = PRESETS[presetKey];
+    const items = getCurrentStringSet();
     items.forEach((item, index) => {
       const row = document.createElement('button');
       row.className = 'string-row';
@@ -283,7 +347,14 @@
         </span>
         <span class="string-row-freq">${freq.toFixed(1)} Hz</span>
       `;
-      row.addEventListener('click', () => playTone(freq, item.note, row));
+      row.addEventListener('click', () => {
+        if (playingRow === row) {
+          // Tapping the currently playing string again toggles it off
+          stopTone();
+        } else {
+          playTone(freq, item.note, row);
+        }
+      });
       stringList.appendChild(row);
     });
   }
@@ -294,8 +365,20 @@
     document.querySelectorAll('.preset-tab').forEach(t => t.classList.remove('is-active'));
     tab.classList.add('is-active');
     currentPreset = tab.dataset.preset;
+    currentTuning = 'regular';
     stopTone();
-    renderStringList(currentPreset);
+    renderTuningTabs();
+    renderStringList();
+  });
+
+  tuningTabs.addEventListener('click', (e) => {
+    const tab = e.target.closest('.tuning-tab');
+    if (!tab) return;
+    document.querySelectorAll('.tuning-tab').forEach(t => t.classList.remove('is-active'));
+    tab.classList.add('is-active');
+    currentTuning = tab.dataset.tuning;
+    stopTone();
+    renderStringList();
   });
 
   function playTone(freq, noteLabel, row) {
@@ -310,8 +393,8 @@
 
     toneOsc = toneAudioCtx.createOscillator();
     toneGain = toneAudioCtx.createGain();
-    // サイン波は倍音がなく小型スピーカーでは聞き取りにくいため、
-    // 基音を少し含む三角波にして聞こえやすくする
+    // A pure sine wave has no harmonics and is hard to hear on small speakers,
+    // so use a triangle wave, which carries a bit of the fundamental's overtones
     toneOsc.type = 'triangle';
     toneOsc.frequency.value = freq;
     toneGain.gain.setValueAtTime(0, toneAudioCtx.currentTime);
@@ -346,7 +429,8 @@
 
   btnStopTone.addEventListener('click', stopTone);
 
-  // 初期描画
-  renderStringList(currentPreset);
+  // Initial render
+  renderTuningTabs();
+  renderStringList();
 
 })();
