@@ -172,7 +172,7 @@ body {
   gap: 20px;
   position: relative;
   z-index: 200;
-  padding: 24px 20px 0;
+  padding: 24px 24px 0;
   flex-shrink: 0;
 }
 
@@ -188,12 +188,12 @@ body {
 
 #appLogo {
   font-family: var(--font-display, 'Outfit'), sans-serif;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
-  text-transform: uppercase;
   margin: 0 0 4px;
   color: #f0f0f3;
+  text-transform: uppercase;
 }
 
 #appLogoAccent {
@@ -206,14 +206,18 @@ body {
   letter-spacing: 0.5px;
   color: #6b6b7b;
   text-transform: none;
+  vertical-align: middle;
 }
 
 #appTitle {
-  margin: 0;
+  margin: 0 0 15px;
   font-family: var(--font-body, 'Plus Jakarta Sans'), sans-serif;
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 600;
-  color: #8b8b9e;
+  color: #d0d0d8;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 /* ---------- Header controls: Color + Shortcuts (matches QNPLAYER) ---------- */
@@ -505,7 +509,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 0 20px;
+  padding: 0 24px;
   margin-top: 15px;
   box-sizing: border-box;
 }
