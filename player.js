@@ -102,7 +102,22 @@
   const btnToneMode = document.getElementById('btnToneMode');
   const btnStopMic2 = document.getElementById('btnStopMic2');
 
-  let currentMode = 'mic';
+  const MODE_STORAGE_KEY = 'qntuner_last_mode';
+  const DESKTOP_BREAKPOINT = '(min-width: 901px)';
+
+  function isDesktopLayout() {
+    return window.matchMedia(DESKTOP_BREAKPOINT).matches;
+  }
+
+  // Default to Tone on first visit; after that, remember whichever mode was last open.
+  // On desktop layout both screens are shown side by side, so mode only matters on mobile.
+  let currentMode = 'tone';
+  try {
+    const savedMode = localStorage.getItem(MODE_STORAGE_KEY);
+    if (savedMode === 'mic' || savedMode === 'tone') currentMode = savedMode;
+  } catch (e) {
+    // localStorage unavailable (e.g. private browsing) — fall back to the Tone default
+  }
 
   function setMode(mode) {
     currentMode = mode;
@@ -112,14 +127,20 @@
     btnStartMic2.classList.toggle('is-active', mode === 'mic');
     btnToneMode.classList.toggle('is-active', mode === 'tone');
 
-    if (mode !== 'tone') stopTone();
-
-    // When switching to mic mode, keep it running if already granted; otherwise stay on the permission screen
-    if (mode !== 'mic' && micStream) {
-      // Never run the mic in the background while in tone mode, to avoid audio interference
-      stopMic();
+    // On mobile, mic and tone are mutually exclusive to avoid audio interference.
+    // On desktop layout both panels are visible at once, so leave whichever is
+    // already running (mic or tone) alone when the person interacts with the other.
+    if (!isDesktopLayout()) {
+      if (mode !== 'tone') stopTone();
+      if (mode !== 'mic' && micStream) stopMic();
     }
     updateBottomStopBtn();
+
+    try {
+      localStorage.setItem(MODE_STORAGE_KEY, mode);
+    } catch (e) {
+      // ignore if storage is unavailable
+    }
   }
 
   function updateBottomStopBtn() {
@@ -202,6 +223,9 @@
   }
 
   btnStartMic.addEventListener('click', startMic);
+
+  const btnStopMicInline = document.getElementById('btnStopMicInline');
+  if (btnStopMicInline) btnStopMicInline.addEventListener('click', stopMic);
 
   // Pitch detection via autocorrelation
   function autoCorrelate(buf, sampleRate) {
@@ -379,14 +403,21 @@
     selectPreset(tab.dataset.preset);
   });
 
+  function selectTuning(tuningKey) {
+    const variants = TUNING_VARIANTS[currentPreset];
+    if (!variants || !variants.some(v => v.key === tuningKey) || tuningKey === currentTuning) return;
+    document.querySelectorAll('.tuning-tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.tuning === tuningKey);
+    });
+    currentTuning = tuningKey;
+    stopTone();
+    renderStringList();
+  }
+
   tuningTabs.addEventListener('click', (e) => {
     const tab = e.target.closest('.tuning-tab');
     if (!tab) return;
-    document.querySelectorAll('.tuning-tab').forEach(t => t.classList.remove('is-active'));
-    tab.classList.add('is-active');
-    currentTuning = tab.dataset.tuning;
-    stopTone();
-    renderStringList();
+    selectTuning(tab.dataset.tuning);
   });
 
   function playTone(freq, noteLabel, row) {
@@ -438,12 +469,16 @@
   btnStopTone.addEventListener('click', stopTone);
 
   // ==================== Keyboard shortcuts (Tone screen only) ====================
-  // 1-6: toggle guitar strings 1-6 on/off
+  // 1-9: toggle the string/note at that position in the currently displayed list
+  //      (numbers beyond the list length do nothing)
   // Space: stop whatever is currently sounding
   // Left/Right: switch preset (Guitar / Bass / Ukulele / Wind)
+  // Up/Down: cycle through tuning variants (Regular / Half Down / Whole Down / Drop D / ...)
 
   document.addEventListener('keydown', (e) => {
-    if (currentMode !== 'tone') return;
+    // On mobile these shortcuts only make sense while the Tone screen is showing;
+    // on desktop layout, Tone is always visible alongside Mic, so always allow them.
+    if (!isDesktopLayout() && currentMode !== 'tone') return;
     if (e.repeat) return;
 
     // Space: stop current tone
@@ -463,12 +498,25 @@
       return;
     }
 
-    // 1-6: toggle guitar strings 1-6 (matches the on-screen order top to bottom)
-    if (currentPreset === 'guitar' && /^Digit[1-6]$/.test(e.code)) {
+    // Up/Down: cycle through tuning variants, when the current preset has any
+    if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+      const variants = TUNING_VARIANTS[currentPreset];
+      if (!variants || variants.length === 0) return;
       e.preventDefault();
-      const stringNumber = parseInt(e.code.replace('Digit', ''), 10);
+      const idx = variants.findIndex(v => v.key === currentTuning);
+      const dir = e.code === 'ArrowUp' ? -1 : 1;
+      const nextIdx = (idx + dir + variants.length) % variants.length;
+      selectTuning(variants[nextIdx].key);
+      return;
+    }
+
+    // 1-9: toggle the note at that position in the on-screen list, top to bottom.
+    // Positions beyond the current list's length are simply ignored.
+    if (/^Digit[1-9]$/.test(e.code)) {
+      e.preventDefault();
+      const position = parseInt(e.code.replace('Digit', ''), 10);
       const rows = stringList.querySelectorAll('.string-row');
-      const row = rows[stringNumber - 1];
+      const row = rows[position - 1];
       if (!row) return;
       row.click();
     }
@@ -477,5 +525,209 @@
   // Initial render
   renderTuningTabs();
   renderStringList();
+
+  // Apply the mode determined above (Tone by default, or whichever was last used)
+  setMode(currentMode);
+
+  // ==================== Color theme (matches QNPLAYER) ====================
+
+  function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    const toHex = x => Math.round(255 * x).toString(16).padStart(2, '0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+  }
+
+  function hexToHue(hex) {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16) / 255;
+    const g = parseInt(hex.substr(2, 2), 16) / 255;
+    const b = parseInt(hex.substr(4, 2), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0;
+    const d = max - min;
+    if (d !== 0) {
+      switch (max) {
+        case r: h = ((g - b) / d) % 6; break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    return h;
+  }
+
+  let rainbowAnimId = null;
+  function updateRainbowAnimation(themeName) {
+    if (rainbowAnimId) {
+      cancelAnimationFrame(rainbowAnimId);
+      rainbowAnimId = null;
+    }
+    if (themeName !== 'rainbow') {
+      ['--accent-primary', '--accent-secondary', '--accent-glow', '--accent-hover-1', '--accent-hover-2'].forEach(v => {
+        document.body.style.removeProperty(v);
+      });
+      return;
+    }
+    let hue = 0;
+    function step() {
+      hue = (hue + 0.3) % 360;
+      const primary = hslToHex(hue, 85, 58);
+      const secondary = hslToHex((hue + 30) % 360, 80, 40);
+      const hoverA = hslToHex((hue - 10 + 360) % 360, 85, 50);
+      const hoverB = hslToHex((hue + 15) % 360, 80, 32);
+      document.body.style.setProperty('--accent-primary', primary);
+      document.body.style.setProperty('--accent-secondary', secondary);
+      document.body.style.setProperty('--accent-glow', primary + '59');
+      document.body.style.setProperty('--accent-hover-1', hoverA);
+      document.body.style.setProperty('--accent-hover-2', hoverB);
+      rainbowAnimId = requestAnimationFrame(step);
+    }
+    step();
+  }
+
+  let glowAnimId = null;
+  let glowEnabled = false;
+
+  function stopGlow() {
+    if (glowAnimId) {
+      cancelAnimationFrame(glowAnimId);
+      glowAnimId = null;
+    }
+    ['--accent-primary', '--accent-secondary', '--accent-glow', '--accent-hover-1', '--accent-hover-2'].forEach(v => {
+      document.body.style.removeProperty(v);
+    });
+  }
+
+  function startGlow() {
+    if (glowAnimId) cancelAnimationFrame(glowAnimId);
+    const baseColor = getComputedStyle(document.body).getPropertyValue('--accent-primary').trim() || '#3b82f6';
+    const fixedHue = hexToHue(baseColor);
+    let t = 0;
+    function stepGlow() {
+      t += 0.008;
+      const lightness = 50 + Math.sin(t) * 15;
+      const primary = hslToHex(fixedHue, 75, lightness);
+      const secondary = hslToHex(fixedHue, 75, Math.max(20, lightness - 20));
+      const hoverA = hslToHex(fixedHue, 80, Math.min(75, lightness + 8));
+      const hoverB = hslToHex(fixedHue, 75, Math.max(15, lightness - 25));
+      document.body.style.setProperty('--accent-primary', primary);
+      document.body.style.setProperty('--accent-secondary', secondary);
+      document.body.style.setProperty('--accent-glow', primary + '59');
+      document.body.style.setProperty('--accent-hover-1', hoverA);
+      document.body.style.setProperty('--accent-hover-2', hoverB);
+      glowAnimId = requestAnimationFrame(stepGlow);
+    }
+    stepGlow();
+  }
+
+  function setGlowEnabled(enabled) {
+    glowEnabled = enabled;
+    try { localStorage.setItem('qntuner_glow', enabled ? 'on' : 'off'); } catch (e) {}
+    const btn = document.getElementById('glowToggleBtn');
+    if (btn) btn.setAttribute('aria-checked', enabled ? 'true' : 'false');
+    if (enabled) {
+      if (document.body.getAttribute('data-theme') === 'rainbow') {
+        document.body.setAttribute('data-theme', 'blue');
+        try { localStorage.setItem('qntuner_theme', 'blue'); } catch (e) {}
+        updateActiveSwatch('blue');
+        updateRainbowAnimation('blue');
+      }
+      startGlow();
+    } else {
+      stopGlow();
+    }
+  }
+
+  function updateActiveSwatch(themeName) {
+    document.querySelectorAll('.theme-swatch').forEach(s => {
+      s.classList.toggle('active', s.getAttribute('data-theme') === themeName);
+    });
+  }
+
+  let storedTheme = null;
+  try { storedTheme = localStorage.getItem('qntuner_theme'); } catch (e) {}
+  const initialTheme = storedTheme || 'blue';
+  document.body.setAttribute('data-theme', initialTheme);
+  updateActiveSwatch(initialTheme);
+  updateRainbowAnimation(initialTheme);
+
+  document.querySelectorAll('.theme-swatch').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      const themeName = swatch.getAttribute('data-theme');
+      document.body.setAttribute('data-theme', themeName);
+      try { localStorage.setItem('qntuner_theme', themeName); } catch (e) {}
+      updateActiveSwatch(themeName);
+      if (themeName === 'rainbow' && glowEnabled) setGlowEnabled(false);
+      updateRainbowAnimation(themeName);
+      if (glowEnabled && themeName !== 'rainbow') startGlow();
+
+      colorPopup.classList.remove('open');
+      colorToggleBtn.classList.remove('active');
+    });
+  });
+
+  const glowToggleBtn = document.getElementById('glowToggleBtn');
+  if (glowToggleBtn) {
+    let savedGlow = false;
+    try { savedGlow = localStorage.getItem('qntuner_glow') === 'on'; } catch (e) {}
+    if (savedGlow) setGlowEnabled(true);
+    glowToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setGlowEnabled(!glowEnabled);
+    });
+  }
+
+  // ==================== Popup helpers (Color / Shortcuts) ====================
+
+  function keepPopupInViewport(toggleBtn, popup) {
+    popup.classList.remove('open-upward');
+    requestAnimationFrame(() => {
+      const btnRect = toggleBtn.getBoundingClientRect();
+      const popupRect = popup.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - btnRect.bottom;
+      const spaceAbove = btnRect.top;
+      if (spaceBelow < popupRect.height + 16 && spaceAbove > spaceBelow) {
+        popup.classList.add('open-upward');
+      }
+    });
+  }
+
+  const colorToggleBtn = document.getElementById('colorToggleBtn');
+  const colorPopup = document.getElementById('colorPopup');
+  if (colorToggleBtn && colorPopup) {
+    colorToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !colorPopup.classList.contains('open');
+      colorPopup.classList.toggle('open', willOpen);
+      colorToggleBtn.classList.toggle('active', willOpen);
+      if (willOpen) keepPopupInViewport(colorToggleBtn, colorPopup);
+    });
+    colorPopup.addEventListener('click', (e) => e.stopPropagation());
+  }
+
+  const shortcutsToggleBtn = document.getElementById('shortcutsToggleBtn');
+  const shortcutsPopup = document.getElementById('shortcutsPopup');
+  if (shortcutsToggleBtn && shortcutsPopup) {
+    shortcutsToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !shortcutsPopup.classList.contains('open');
+      shortcutsPopup.classList.toggle('open', willOpen);
+      shortcutsToggleBtn.classList.toggle('active', willOpen);
+      if (willOpen) keepPopupInViewport(shortcutsToggleBtn, shortcutsPopup);
+    });
+    shortcutsPopup.addEventListener('click', (e) => e.stopPropagation());
+  }
+
+  document.addEventListener('click', () => {
+    if (colorPopup) colorPopup.classList.remove('open');
+    if (colorToggleBtn) colorToggleBtn.classList.remove('active');
+    if (shortcutsPopup) shortcutsPopup.classList.remove('open');
+    if (shortcutsToggleBtn) shortcutsToggleBtn.classList.remove('active');
+  });
 
 })();
