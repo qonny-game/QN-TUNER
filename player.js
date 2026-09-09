@@ -665,8 +665,8 @@
       updateRainbowAnimation(themeName);
       if (glowEnabled && themeName !== 'rainbow') startGlow();
 
-      colorPopup.classList.remove('open');
-      colorToggleBtn.classList.remove('active');
+      qnMenuPopup.classList.remove('open');
+      qnMenuBtn.classList.remove('active');
     });
   });
 
@@ -681,7 +681,7 @@
     });
   }
 
-  // ==================== Popup helpers (Color / Shortcuts) ====================
+  // ==================== Popup helper (QN hamburger menu: nav + Color + Shortcuts) ====================
 
   function keepPopupInViewport(toggleBtn, popup) {
     popup.classList.remove('open-upward');
@@ -697,37 +697,22 @@
     });
   }
 
-  const colorToggleBtn = document.getElementById('colorToggleBtn');
-  const colorPopup = document.getElementById('colorPopup');
-  if (colorToggleBtn && colorPopup) {
-    colorToggleBtn.addEventListener('click', (e) => {
+  const qnMenuBtn = document.getElementById('qnMenuBtn');
+  const qnMenuPopup = document.getElementById('qnMenuPopup');
+  if (qnMenuBtn && qnMenuPopup) {
+    qnMenuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const willOpen = !colorPopup.classList.contains('open');
-      colorPopup.classList.toggle('open', willOpen);
-      colorToggleBtn.classList.toggle('active', willOpen);
-      if (willOpen) keepPopupInViewport(colorToggleBtn, colorPopup);
+      const willOpen = !qnMenuPopup.classList.contains('open');
+      qnMenuPopup.classList.toggle('open', willOpen);
+      qnMenuBtn.classList.toggle('active', willOpen);
+      if (willOpen) keepPopupInViewport(qnMenuBtn, qnMenuPopup);
     });
-    colorPopup.addEventListener('click', (e) => e.stopPropagation());
-  }
-
-  const shortcutsToggleBtn = document.getElementById('shortcutsToggleBtn');
-  const shortcutsPopup = document.getElementById('shortcutsPopup');
-  if (shortcutsToggleBtn && shortcutsPopup) {
-    shortcutsToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const willOpen = !shortcutsPopup.classList.contains('open');
-      shortcutsPopup.classList.toggle('open', willOpen);
-      shortcutsToggleBtn.classList.toggle('active', willOpen);
-      if (willOpen) keepPopupInViewport(shortcutsToggleBtn, shortcutsPopup);
-    });
-    shortcutsPopup.addEventListener('click', (e) => e.stopPropagation());
+    qnMenuPopup.addEventListener('click', (e) => e.stopPropagation());
   }
 
   document.addEventListener('click', () => {
-    if (colorPopup) colorPopup.classList.remove('open');
-    if (colorToggleBtn) colorToggleBtn.classList.remove('active');
-    if (shortcutsPopup) shortcutsPopup.classList.remove('open');
-    if (shortcutsToggleBtn) shortcutsToggleBtn.classList.remove('active');
+    if (qnMenuPopup) qnMenuPopup.classList.remove('open');
+    if (qnMenuBtn) qnMenuBtn.classList.remove('active');
   });
 
 })();
