@@ -11,87 +11,23 @@
 <link rel="icon" type="image/png" sizes="512x512" href="favicon-512x512.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
+<script>
+  window.QN_CURRENT_APP = "tuner";
+  window.QN_SHORTCUTS = [
+    { key: "Space", action: "Stop current tone" },
+    { key: "← →", action: "Switch preset" },
+    { key: "↑ ↓", action: "Switch tuning" },
+    { key: "1 – 9", action: "Toggle note on/off" },
+  ];
+</script>
 </head>
 <body data-theme="blue">
 
 <header id="appHeader">
-  <div class="header-btn-wrapper">
-    <button id="qnMenuBtn" title="QN Series Menu">
-      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
-    </button>
-    <div class="qn-menu-popup" id="qnMenuPopup">
-
-      <div class="qn-menu-section">
-        <span class="qn-menu-section-label">QN Series</span>
-        <a class="qn-nav-btn" data-qn-app="player" href="https://qonny-game.github.io/QN-PLAYER/" title="QNPLAYER" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-          <span>QNPLAYER</span>
-        </a>
-        <a class="qn-nav-btn" data-qn-app="pitch" href="https://qonny-game.github.io/QN-PITCH/" title="QNPITCH" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4zm7 9a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V22h2v-1.06A9 9 0 0 0 21 12h-2z"/></svg>
-          <span>QNPITCH</span>
-        </a>
-        <a class="qn-nav-btn" data-qn-app="phrase" href="https://qonny-game.github.io/QN-PHRASE" title="QNPHRASE" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M9 3v10.55A4 4 0 1 0 11 17V7h4v3h2V3H9zM8 15.5A2.5 2.5 0 1 1 8 15.5z"/></svg>
-          <span>QNPHRASE</span>
-        </a>
-        <a class="qn-nav-btn" data-qn-app="tempo" href="https://qonny-game.github.io/QN-TEMPO/" title="QNTEMPO" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M9 2v2h6V2h2v2.06c1.14.2 2 1.2 2 2.4 0 .77-.35 1.46-.9 1.92L20 20H4l1.9-11.62A2.5 2.5 0 0 1 5 6.46c0-1.2.86-2.2 2-2.4V2h2zm2.6 6.5-1.9 9.9h2.6l1.6-8.4-2.3-1.5z"/></svg>
-          <span>QNTEMPO</span>
-        </a>
-        <a class="qn-nav-btn" data-qn-app="tuner" href="https://qonny-game.github.io/QN-TUNER/" title="QNTUNER" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24"><path d="M9 3v6.28A3.5 3.5 0 1 0 11 12.7V7h4V3H9zm7 8h-2v10h2V11zm-8 0H6v10h2V11z"/></svg>
-          <span>QNTUNER</span>
-        </a>
-      </div>
-
-      <div class="qn-menu-section">
-        <span class="qn-menu-section-label">Color Theme</span>
-        <div class="theme-swatches">
-          <div class="theme-swatch swatch-red" data-theme="red" title="Red"></div>
-          <div class="theme-swatch swatch-orange" data-theme="orange" title="Orange"></div>
-          <div class="theme-swatch swatch-amber" data-theme="amber" title="Amber Gold"></div>
-          <div class="theme-swatch swatch-lime" data-theme="lime" title="Lime"></div>
-          <div class="theme-swatch swatch-emerald" data-theme="emerald" title="Emerald Green"></div>
-          <div class="theme-swatch swatch-teal" data-theme="teal" title="Teal"></div>
-          <div class="theme-swatch swatch-cyan" data-theme="cyan" title="Cyan"></div>
-          <div class="theme-swatch swatch-sky" data-theme="sky" title="Sky Blue"></div>
-          <div class="theme-swatch swatch-blue active" data-theme="blue" title="Blue (Default)"></div>
-          <div class="theme-swatch swatch-indigo" data-theme="indigo" title="Indigo"></div>
-          <div class="theme-swatch swatch-purple" data-theme="purple" title="Electric Purple"></div>
-          <div class="theme-swatch swatch-violet" data-theme="violet" title="Violet"></div>
-          <div class="theme-swatch swatch-pink" data-theme="pink" title="Pink"></div>
-          <div class="theme-swatch swatch-rose" data-theme="rose" title="Rose Red"></div>
-          <div class="theme-swatch swatch-rainbow" data-theme="rainbow" title="Rainbow (Animated)"></div>
-        </div>
-        <div class="glow-toggle-row">
-          <span class="glow-toggle-label">Glow current color</span>
-          <button id="glowToggleBtn" class="glow-switch" role="switch" aria-checked="false" title="Fade the current color in and out">
-            <span class="glow-switch-knob"></span>
-          </button>
-        </div>
-      </div>
-
-      <div class="qn-menu-section">
-        <span class="qn-menu-section-label">Keyboard Shortcuts</span>
-        <table class="shortcut-table">
-          <thead>
-            <tr><th>Key</th><th>Action</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><kbd>Space</kbd></td><td>Stop current tone</td></tr>
-            <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Switch preset</td></tr>
-            <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Switch tuning</td></tr>
-            <tr><td><kbd>1</kbd> – <kbd>9</kbd></td><td>Toggle note on/off</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-  </div>
+  <div id="qnMenuMount"></div>
 
   <div id="appHeaderText">
-    <h1 id="appLogo"><span id="appLogoAccent">QN</span>TUNER <span id="appVersion">v1.9.3</span></h1>
+    <h1 id="appLogo"><span id="appLogoAccent">QN</span>TUNER <span id="appVersion">v1.9.4</span></h1>
     <p id="appTitle">Mic Tuner &amp; Tone Generator</p>
   </div>
 </header>
@@ -185,7 +121,7 @@
 
 </footer>
 
-<script src="qn-nav.js"></script>
 <script src="player.js"></script>
+<script src="https://qonny-game.github.io/QN-PLAYER/qn-menu.js"></script>
 </body>
 </html>
