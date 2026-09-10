@@ -237,7 +237,38 @@
   // Higher sensitivity = lower silence threshold (picks up quieter/decaying notes)
   // and a longer hold time before the display resets to "waiting".
   // At the default (50), behavior matches the original fixed values.
-  let sensitivity = 50;
+  const SETTINGS_KEY = 'qntuner-mic-settings';
+
+  function loadMicSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function saveMicSettings() {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({ sensitivity, smoothing }));
+    } catch (err) {
+      // ignore (e.g. storage disabled/full)
+    }
+  }
+
+  const savedMicSettings = loadMicSettings();
+
+  let sensitivity = clampSlider(savedMicSettings.sensitivity, 50);
+  let smoothing = clampSlider(savedMicSettings.smoothing, 50);
+
+  function clampSlider(value, fallback) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return fallback;
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
   const SILENCE_RMS_MIN = 0.002;   // threshold at sensitivity = 100 (most sensitive)
   const SILENCE_RMS_MAX = 0.02;    // threshold at sensitivity = 0 (least sensitive)
   const HOLD_FRAMES_MIN = 45;      // ~0.75s hold at sensitivity = 0
@@ -253,12 +284,46 @@
     return Math.round(HOLD_FRAMES_MIN + (HOLD_FRAMES_MAX - HOLD_FRAMES_MIN) * t);
   }
 
+  // Smoothing: 0-100 slider value. Higher = smoother/slower to react.
+  // These bound the EMA factors used in tickMic: at 0% the readout and
+  // needle track the raw signal almost immediately (closer to the old,
+  // un-smoothed behavior); at 100% they ease in gradually.
+  const FREQ_SMOOTHING_MIN = 0.6;   // at smoothing = 0 (fastest/twitchiest)
+  const FREQ_SMOOTHING_MAX = 0.08;  // at smoothing = 100 (smoothest)
+  const NEEDLE_SMOOTHING_MIN = 0.5;
+  const NEEDLE_SMOOTHING_MAX = 0.05;
+
+  function freqSmoothingFactor() {
+    const t = smoothing / 100;
+    return FREQ_SMOOTHING_MIN + (FREQ_SMOOTHING_MAX - FREQ_SMOOTHING_MIN) * t;
+  }
+
+  function needleSmoothingFactor() {
+    const t = smoothing / 100;
+    return NEEDLE_SMOOTHING_MIN + (NEEDLE_SMOOTHING_MAX - NEEDLE_SMOOTHING_MIN) * t;
+  }
+
   const sensitivitySlider = document.getElementById('sensitivitySlider');
   const sensitivityValue = document.getElementById('sensitivityValue');
   if (sensitivitySlider) {
+    sensitivitySlider.value = sensitivity;
+    sensitivityValue.textContent = `${sensitivity}%`;
     sensitivitySlider.addEventListener('input', () => {
       sensitivity = parseInt(sensitivitySlider.value, 10);
       sensitivityValue.textContent = `${sensitivity}%`;
+      saveMicSettings();
+    });
+  }
+
+  const smoothingSlider = document.getElementById('smoothingSlider');
+  const smoothingValue = document.getElementById('smoothingValue');
+  if (smoothingSlider) {
+    smoothingSlider.value = smoothing;
+    smoothingValue.textContent = `${smoothing}%`;
+    smoothingSlider.addEventListener('input', () => {
+      smoothing = parseInt(smoothingSlider.value, 10);
+      smoothingValue.textContent = `${smoothing}%`;
+      saveMicSettings();
     });
   }
 
@@ -314,6 +379,8 @@
   }
 
   let micSilenceFrames = 0;
+  let smoothedFreq = null;
+  let smoothedAngle = 0;
 
   function tickMic() {
     micRafId = requestAnimationFrame(tickMic);
@@ -328,20 +395,34 @@
         centsDisplay.textContent = 'Play a note';
         needle.style.transform = 'rotate(0deg)';
         meterWrap.removeAttribute('data-state');
+        smoothedFreq = null;
+        smoothedAngle = 0;
       }
       return;
     }
     micSilenceFrames = 0;
 
-    const { noteName, octave, cents } = freqToNote(freq);
+    // Smooth the raw detected frequency so octave-stable jitter and
+    // harmonic noise don't make the note/cents readout twitch.
+    // If the new reading is a big jump (e.g. a new note was played),
+    // snap directly instead of smoothing into it.
+    if (smoothedFreq === null || Math.abs(freq - smoothedFreq) / smoothedFreq > 0.06) {
+      smoothedFreq = freq;
+    } else {
+      smoothedFreq += (freq - smoothedFreq) * freqSmoothingFactor();
+    }
+
+    const { noteName, octave, cents } = freqToNote(smoothedFreq);
     noteDisplay.textContent = `${noteName}${octave}`;
-    freqValue.textContent = freq.toFixed(1);
+    freqValue.textContent = smoothedFreq.toFixed(1);
     centsDisplay.textContent = `${cents > 0 ? '+' : ''}${cents} cent`;
 
-    // Needle: map -50..+50 cents to -80..+80 degrees
+    // Needle: map -50..+50 cents to -80..+80 degrees, with its own
+    // smoothing pass on top for fluid motion rather than snapping.
     const clamped = Math.max(-50, Math.min(50, cents));
-    const angle = (clamped / 50) * 80;
-    needle.style.transform = `rotate(${angle}deg)`;
+    const targetAngle = (clamped / 50) * 80;
+    smoothedAngle += (targetAngle - smoothedAngle) * needleSmoothingFactor();
+    needle.style.transform = `rotate(${smoothedAngle}deg)`;
 
     let state = 'in';
     if (cents < -6) state = 'flat';
