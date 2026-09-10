@@ -168,7 +168,7 @@ body {
   width: 100%;
   max-width: 480px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   gap: 14px;
   position: relative;
@@ -182,16 +182,12 @@ body {
   }
 }
 
-#appHeaderText {
-  min-width: 0;
-}
-
 #appLogo {
   font-family: var(--font-display, 'Instrument Sans'), sans-serif;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 1px;
-  margin: 0 0 4px;
+  margin: 0;
   color: #f0f0f3;
   text-transform: uppercase;
 }
@@ -207,17 +203,6 @@ body {
   color: #6b6b7b;
   text-transform: none;
   vertical-align: middle;
-}
-
-#appTitle {
-  margin: 0 0 15px;
-  font-family: var(--font-body, 'Instrument Sans'), sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: #d0d0d8;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 100%;
 }
 
 
