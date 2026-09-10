@@ -835,12 +835,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: 16px 16px 0;
-  }
-  .app-container {
-    margin-top: 12px;
-  }
   .note-display {
     font-size: 42px;
     min-height: 48px;
