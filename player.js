@@ -172,7 +172,7 @@
   let micRafId = null;
   let dataBuf = null;
 
-  async function startMic() {
+  async function startMic(auto = false) {
     micErrorNote.textContent = '';
     try {
       micStream = await navigator.mediaDevices.getUserMedia({
@@ -183,7 +183,7 @@
         }
       });
     } catch (err) {
-      micErrorNote.textContent = 'Microphone access was not granted';
+      if (!auto) micErrorNote.textContent = 'Microphone access was not granted';
       return;
     }
 
@@ -223,6 +223,12 @@
   }
 
   btnStartMic.addEventListener('click', startMic);
+
+  // Try to get mic access automatically on page load.
+  // Browsers may block this without a user gesture, or may re-prompt
+  // every time if permission hasn't been granted before — in that case
+  // this silently falls back to the normal "Start Mic" button flow.
+  startMic(true);
 
   const btnStopMicInline = document.getElementById('btnStopMicInline');
   if (btnStopMicInline) btnStopMicInline.addEventListener('click', stopMic);
